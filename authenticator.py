@@ -12,7 +12,11 @@ def safeb32decode(data):
 	return(base64.b32decode(data, True))
 
 
-def hotp(secret, generation):
+def timestampgeneration(): 
+	return int(time()) // 30
+
+
+def otp(secret, generation=timestampgeneration()):
 	digest = hmac.new(
 		safeb32decode(secret),
 		struct.pack("!Q", generation),
@@ -23,9 +27,11 @@ def hotp(secret, generation):
 	number = (struct.unpack("!I", digest[index:index+4])[0] & 0x7FFFFFFF) % 10**6
 	return "{:0>6}".format(number)
 
+def hotp(secret, generation):
+	return otp(secret, generation)
 
 def totp(secret):
-	return hotp(secret, int(time()) // 30)
+	return otp(secret)
 
 
 # print(totp("SECRETSECRETSECRET")) #this will print the google auth timed code for the secret "SECRETSECRETSECRET"
